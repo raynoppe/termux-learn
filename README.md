@@ -1,7 +1,6 @@
 # Learn Termux
 
-This is the course material to acompany the 'Fast Track Learning
-Web App Development on an android device with Termux' 
+This is the course material to accompany the 'Fast Track Learning Web App Development on an android device with Termux' 
 
 ## Why develop on a tablet?
 Why not? Why do we as developers have to carry around laptops when we can use an 8-inch tablet that fits in our jacket pocket. On top of that being able to develop when out and about and not worrying about whether we have internet or not is a bonus. 
