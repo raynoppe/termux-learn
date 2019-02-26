@@ -1,0 +1,192 @@
+# NeDB
+
+nedb.js:
+
+module.exports = (function() {
+    'use strict';
+    const useNEDB = require('express').Router();
+    const bodyParser = require('body-parser');
+
+    useNEDB.use(bodyParser.json({limit: '50mb'}));
+    useNEDB.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
+    useNEDB.get('/', function (req, res) {
+        res.json({ message: 'NeDB loaded' });
+    });
+
+    useNEDB.post('/', function (req, res) {
+        res.json({ 
+            retdata: req.body.sendata
+        });
+    });
+    return useNEDB;
+})();
+
+apprest/app.js:
+
+const nedb = require('./nedb');
+app.use('/nedb', nedb);
+
+-- copy start
+
+module.exports = (function() {
+    'use strict';
+    const useNEDB = require('express').Router();
+    const bodyParser = require('body-parser');
+
+    /* Import NeDB and created a new instance */
+    const DataBase = require('nedb');
+    const db = new DataBase({
+        filename: 'db/people.db', // specify a the name and route to your database 
+        autoload: true, // automatically load the database
+        timestampData: true // automatically add and update the fields createdAt and updatedAt
+    });
+
+    /* Create an universal return document to send back to the client */
+    const ret = {
+        status: 200,
+        message: '',
+        data: []
+    }
+
+    useNEDB.use(bodyParser.json({limit: '50mb'}));
+    useNEDB.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
+    /* retrieve all the records */
+    useNEDB.get('/', function (req, res) {
+        db.find(
+            {} // the search object. leave empty for all records
+            )
+            .sort({ // sort the results
+                updatedAt: -1 
+        }).exec(function(err, persons) { // a function that returns the response from the database. err will contain the error if it exists. numUpdated is the name of the variable that contains the response
+            const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+            if (err) { // catch any errors and send it back to the client
+                ms.status = 500; // sends the error code 500
+                ms.message = err; // send the error back via the message field
+            } else { // no errors return the results to the client
+                ms.status = 200; // sends the ok code of 200
+                ms.data = persons; // return the found rows
+            }
+            res.json(ms); // return the result to the client
+        });
+    });
+
+    /* get a single record using a document id */
+    useNEDB.get('/:id', function (req, res) {
+        const personId = req.params.id; // retrieve the sent id
+        db.findOne( // use the findone function to get a single record
+            { _id: personId }, // pass the id  
+            {}, // allows you to send extra params that tells NeDB 
+            function(err, persons) { // a function that returns the response from the database. err will contain the error if it exists. numUpdated is the name of the variable that contains the response
+            const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+            if (err) { // catch any errors and send it back to the client
+                ms.status = 500; // sends the error code 500
+                ms.message = err; // send the error back via the message field
+            } else { // no errors return the results to the client
+                ms.status = 200; // sends the ok code of 200
+                ms.data = persons; // return the found row
+            }
+            res.json(ms); // return the result to the client
+        });
+    });
+
+    /* create a new record */
+    useNEDB.post('/', function (req, res) {
+        const newdata = { // create a new record to insert into the database and pass the inbound data to it
+            firstname: req.body.firstname,
+            lastname: req.body.lastname,
+            position: req.body.position
+        }
+        db.insert( // calls the insert function
+            newdata, // the data to insert
+            function(err, newRow) { // a function that returns the response from the database. err will contain the error if it exists. numUpdated is the name of the variable that contains the response
+            const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+            if (err) { // catch any errors and send it back to the client
+                ms.status = 500; // sends the error code 500
+                ms.message = err; // send the error back via the message field
+            } else { // no errors return the results to the client
+                ms.status = 200; // sends the ok code of 200
+                ms.data.push(newRow); // return the newly created row
+            }
+            res.json(ms); // return the result to the client
+        });
+    });
+
+    /*  update a record or individual fields */
+    useNEDB.put('/', function (req, res) {
+        const idToUpdate = req.body.id; // retrieve the id of the record to update
+        const updata = {} // create a new update object
+
+        /* check which fields are being sent and add them to the update object */
+        if (req.body.firstname) { updata['firstname'] = req.body.firstname; }
+        if (req.body.lastname) { updata['lastname'] = req.body.lastname; }
+        if (req.body.position) { updata['position'] = req.body.position; }
+
+        db.update( // calls the update function
+            { _id: idToUpdate }, // the record by id to update. This is a normal search field and you can use any field = var against it
+            { $set: updata }, // sets the data to be updated. We use $set and pass an object to it
+            {}, // allows you to send extra params that tells NeDB 
+            function (err, numUpdated) { // a function that returns the response from the database. err will contain the error if it exists. numUpdated is the name of the variable that contains the response
+            const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+            if (err) { // catch any errors and send it back to the client
+                ms.status = 500; // sends the error code 500
+                ms.message = err; // send the error back via the message field
+            } else { // no errors return the results to the client
+                ms.status = 200; // sends the ok code of 200
+                ms.message = numUpdated; // send back how many records have been updated
+            }
+            res.json(ms); // return the result to the client
+        });
+    });
+
+    /* delete a record by id */
+    useNEDB.delete('/:id', function (req, res) {
+        const personId = req.params.id;
+        db.remove( // calls the function to delete a record from the database
+            { _id: personId }, // the record by id to delete
+            {}, // allows you to send extra params that tells NeDB
+            function(err, deleted) { // a function that returns the response from the database. err will contain the error if it exists. numUpdated is the name of the variable that contains the response
+            const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+            if (err) { // catch any errors and send it back to the client
+                ms.status = 500; // sends the error code 500
+                ms.message = err; // send the error back via the message field
+            } else { // no errors return the results to the client
+                if(deleted == 0) {
+                    ms.status = 500; // sends the error code 500
+                    ms.message = 'No record found to delete'; // send the error back via the message field
+                } else {
+                    ms.status = 200; // sends the ok code of 200
+                    ms.message = 'Record deleted'; // send back a confirmation message
+                }
+                
+            }
+            res.json(ms); // return the result to the client
+        });
+    });
+
+    return useNEDB;
+})();
+
+
+-- copy end
+
+Insert records:
+
+{ 
+	"firstname": "Ray",
+	"lastname": "Noppe",
+	"position":"CINO"
+}
+
+{ 
+	"firstname": "David",
+	"lastname": "Andreu",
+	"position":"CTO"
+}
+
+{ 
+	"firstname": "Bob",
+	"lastname": "Smith",
+	"position":"Staff"
+}

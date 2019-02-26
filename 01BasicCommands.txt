@@ -1,0 +1,49 @@
+$ termux-setup-storage
+
+Course resources
+$ git clone https://github.com/raynoppe/termux-learn.git
+
+FTP start
+$ tcpsvd -vE 0.0.0.0 1024 ftpd -w /
+
+Create a file with content. 
+$ touch app.js
+$ echo "console.log('Node works')" >> app.js
+$ node app.js
+
+Making a file executable
+Create the node file
+$ cd folder1/folder2
+$ touch app.js
+$ echo "const now = new Date();" >> app.js
+$ echo "const dt = now.toString();" >> app.js
+$ echo "console.log('The date is: ', dt);" >> app.js
+$ node app.js
+
+Now we create the bash script:
+
+$ cd ~
+$ touch test.sh
+$ echo "#! /bin/bash" >> test.sh
+$ echo "cd folder1/folder2" >> test.sh
+$ echo "pwd" >> test.sh
+$ echo "node app.js" >> test.sh
+$ echo "cd ~" >> test.sh
+$ echo "pwd" >> test.sh
+
+Make the bash file executable:
+
+$ chmod +x test.sh
+
+Run the file
+
+$ ./test.sh
+
+Install BLACKICEcoder
+
+$ git clone https://github.com/raynoppe/BLACKICEcoder.git
+
+$ php -S 127.0.0.1:1028 -t ~/BLACKICEcoder/
+
+$ vim ~/BLACKICEcoder/lib/config___settings.php
+

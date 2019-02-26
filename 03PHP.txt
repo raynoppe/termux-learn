@@ -1,0 +1,23 @@
+# PHP 
+folder1/index.php
+<?php phpinfo(); ?> 
+
+php -S 127.0.0.1:1029 -t ~/folder1
+
+# Use php with Apache
+
+httpd.conf
+<IfModule dir_module>
+	DirectoryIndex index.php
+	DirectoryIndex index.html
+</IfModule>
+
+LoadModule php7_module /data/data/com.termux/files/usr/libexec/apache2/libphp7.so
+<FilesMatch \.php$>
+    SetHandler application/x-httpd-php
+</FilesMatch>
+
+folder1/wwww
+<?php 
+echo "php is working";
+?>

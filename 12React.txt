@@ -1,0 +1,15 @@
+# React
+$ npm install -g npx
+
+$ npm install create-react-app -g
+
+$ npx create-react-app apprx 
+
+## Installing a React JS template
+
+$ cd ~
+$ git clone https://github.com/coreui/coreui-free-react-admin-template.git
+$ mv coreui-free-react-admin-template coreui
+$ cd coreui
+$ npm install
+

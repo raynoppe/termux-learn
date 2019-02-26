@@ -1,0 +1,42 @@
+Apache
+Create apache home folder alias
+$ ln -s /data/data/com.termux/files/usr/share/apache2/default-site/htdocs /data/data/com.termux/files/home/htdocs
+
+index.html content
+<html>
+  <head>
+    <title>www</title>
+  </head>
+  <body>www is now my doc route</body>
+</html>
+
+httpd.config: 
+/data/data/com.termux/files/home/www 
+
+Virtual Hosts
+<Directory /data/data/com.termux/files/home/www>
+    Options Indexes FollowSymLinks
+    AllowOverride none
+    Require all granted
+</Directory>
+<Directory /data/data/com.termux/files/home/www2>
+    Options Indexes FollowSymLinks
+    AllowOverride none
+    Require all granted
+</Directory>
+
+httpd-vhost.conf
+<VirtualHost *:8080>
+    DocumentRoot "/data/data/com.termux/files/home/www"
+    ServerName dummy-host.example.com
+    ServerAlias www.dummy-host.example.com
+    ErrorLog "/data/data/com.termux/files/home/www-error_log"
+    CustomLog "/data/data/com.termux/files/home/www-access_log" common
+</VirtualHost>
+
+<VirtualHost *:8081>
+    DocumentRoot "/data/data/com.termux/files/home/www2"
+    ServerName dummy-host2.example.com
+    ErrorLog "/data/data/com.termux/files/home/www2-error_log"
+    CustomLog "/data/data/com.termux/files/home/www2-access_log" common
+</VirtualHost>

@@ -1,0 +1,33 @@
+# Debugging your apps
+www/index.html:
+
+<html>
+  <head>
+    <title>www</title>
+    <script>
+      console.log('this is a console message');
+    </script>
+  </head>
+  <body>www is now my doc route</body>
+</html>
+
+## Firebug
+
+www/index.html: 
+-- copy start
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>www</title>
+    <script language="javascript" type="text/javascript" src="/firebug/firebug-lite.js"></script>
+    <script>
+      const name = 'David';
+      console.log('hello', name);
+    </script>
+  </head>
+  <body>
+    www is now my doc route
+  </body>
+</html>
+-- copy end

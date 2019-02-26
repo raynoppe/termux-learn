@@ -1,0 +1,185 @@
+# PostgreSQL
+Install PostgreSQL
+
+$ pkg install postgresql
+
+Setup your database
+
+Create a new folder to use for your database:
+
+$ mkdir -p $PREFIX/var/lib/postgresql
+
+Init the folder for PostgreSQL:
+
+$ initdb $PREFIX/var/lib/postgresql
+
+Start PostgreSQL
+
+$ pg_ctl -D $PREFIX/var/lib/postgresql start
+
+Create a database:
+
+$ createdb apprest 
+
+$ createuser --superuser --pwprompt learntermux
+
+Open your database:
+$ psql apprest
+
+Create  a new table called people:
+
+CREATE TABLE people (personid SERIAL  PRIMARY KEY, firstname varchar(200), lastname varchar(200), position varchar(200), updateat  timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'));
+
+INSERT INTO people (firstname, lastname, position) VALUES ('Ray', 'Noppe', 'CINO'), ('David', 'Andreu', 'CTO'), ('Bob', 'Smith', 'Staff'); 
+
+apprest/app.js:
+const pg = require('./postgresql');
+app.use('/pg', pg);
+
+postgresql.js:
+-- copy start
+
+module.exports = (function() {
+    'use strict';
+    const pgDB = require('express').Router();
+    const bodyParser = require('body-parser');
+
+    const { Client } = require('pg'); // import the PostgreSQL library
+    /* connect to PostgreSQL */
+    const client = new Client({
+        user: 'learntermux',
+        host: '127.0.0.1',
+        database: 'apprest',
+        password: 'kender10', // your chosen password here
+        port: 5432,
+    })
+    client.connect();
+
+    /* Create an universal return document to send back to the client */
+    const ret = {
+        status: 200,
+        message: '',
+        data: []
+    }
+
+    pgDB.use(bodyParser.json({limit: '50mb'}));
+    pgDB.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
+    /* retrieve all the records */
+    /* note the difference in the calls. We are using async calls so that we can use the await function in the script to resolve promises. This means that we let the function wait for the data to be returned before it continues */
+    pgDB.get('/people', async (req, res) => { 
+        const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+        try {
+            /* do the query here. We are sending a plain text query so we don't have to define a query object */
+            const result = await client.query('SELECT * FROM people'); 
+            ms['totalrows'] = result.rowCount; // add a new value to the return value with the record count
+            ms.data = result.rows;
+            res.json(ms); // return the result to the client
+        } catch(err) { // catch errors and send them back to the client
+            ms.status = 500;
+            ms.message = err;
+            res.json(ms); // return the result to the client
+        }
+    });
+
+    /* get a single record using a document id */
+    pgDB.get('/people/:id', async (req, res) => {
+        const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+        const personId = req.params.id; // retrieve the sent id
+        /* because we are passing data into the query we create a query object first that we then send when doing the query */
+        const query = {
+            text: 'SELECT * FROM people WHERE personid = $1',
+            values: [personId]
+        }
+        try {
+            const result = await client.query(query); // we send the query object here
+            ms['totalrows'] = result.rowCount; // add a new value to the return value with the record count
+            ms.data = result.rows;
+            res.json(ms); // return the result to the client
+        } catch(err) {
+            ms.status = 500;
+            ms.message = err;
+            res.json(ms); // return the result to the client
+        }
+    });
+
+    /* create a new record */
+    pgDB.post('/people', async (req, res) => {
+        const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+        const firstname = req.body.firstname;
+        const lastname = req.body.lastname;
+        const position = req.body.position;
+        
+        const query = {
+            text: 'INSERT INTO people(firstname, lastname, position) VALUES($1, $2, $3)',
+            values: [firstname, lastname, position]
+        }
+        try {
+            const result = await client.query(query);
+            res.json(result); // return the result to the client
+        } catch(err) {
+            ms.status = 500;
+            ms.message = err;
+            res.json(ms); // return the result to the client
+        }
+    });
+
+    /*  update a record or individual fields */
+    pgDB.put('/people', async (req, res) => {
+        const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+        const personid = req.body.personid; // retrieve the id of the record to update
+        const firstname = req.body.firstname;
+        const lastname = req.body.lastname;
+        const position = req.body.position;
+        const query = {
+            text: 'UPDATE people SET firstname = $1, lastname = $2, position = $3 WHERE personid = $4 ',
+            values: [firstname, lastname, position, personid]
+        }
+
+        try {
+            const result = await client.query(query);
+            res.json(result); // return the result to the client
+        } catch(err) {
+            ms.status = 500;
+            ms.message = err;
+            res.json(ms); // return the result to the client
+        }
+    });
+
+    /* delete a record by id */
+    pgDB.delete('/people/:id', async (req, res) => {
+        const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client
+        const personid = req.params.id;
+         const query = {
+            text: 'DELETE FROM people WHERE personid = $1 ',
+            values: [personid]
+        }
+
+        try {
+            const result = await client.query(query);
+            res.json(result); // return the result to the client
+        } catch(err) {
+            ms.status = 500;
+            ms.message = err;
+            res.json(ms); // return the result to the client
+        }
+    });
+
+    return pgDB;
+})();
+
+
+-- copy end
+
+{ 
+	"firstname": "Peter",
+	"lastname": "Frampton",
+	"position":"Guitarist"
+}
+
+{ 
+	"personid": 3,
+	"firstname": "Bob",
+	"lastname": "Smith",
+	"position":"Manager"
+}

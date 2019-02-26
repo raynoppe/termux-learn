@@ -1,0 +1,173 @@
+# SQLite
+
+CREATE TABLE people(
+personid INTEGER PRIMARY KEY AUTOINCREMENT,
+firstname TEXT NOT NULL,
+lastname TEXT NOT NULL,
+position TEXT NULL);
+
+INSERT INTO people(firstname,lastname,position) 
+VALUES ("Ray","Noppe","CINO"),
+("David", "Andreu", "CTO"),
+("Bob", "Smith", "Staff");
+
+apprest/app.js
+
+const sqll = require('./sqlite');
+app.use('/sqlite', sqll);
+
+$ touch sqlite.js
+
+-- code start
+
+module.exports = (function() {
+    'use strict';
+    const useSqlite = require('express').Router();
+    const sqlite3 = require('sqlite3').verbose();
+    /* Create an universal return document to send back to the client */
+    const ret = {
+        status: 200,
+        message: '',
+        data: []
+    }
+
+    useSqlite.get('/people', function (req, res) {
+        let qstr = ''; /* create an empty query string */
+        let qval = []; /* create an empty query value array */
+        for (let key in req.query) { /* loop through the url */
+            if (qstr === '') { /* Because a SQL query in the form of SELECT * FROM WHERE condition = 'value' AND condition2 = 'value2' */
+                qstr += `WHERE ${key} = ? `;
+            } else {
+                qstr += `AND ${key} = ? `;
+            }
+            qval.push(req.query[key]); /* add the values to the array */
+        }
+        const ms = JSON.parse(JSON.stringify(ret)); /*  duplicate the message. this avoids wrong messages being sent to the client */
+        const db = new sqlite3.Database('./db/data.db'); /* open the database */
+        
+        let sql = `SELECT * FROM people ${qstr} `; /* build the query string */
+    
+        db.all(sql, qval, (err, rows) => { /* call the all function to get the records */
+            if (err) { /* check for an error */
+                ms.status = 500;
+                ms.message = err;
+                res.json(ms); /* return the result to the client */
+            } else {
+                ms.data = rows; /* add the found rows to the return message */
+                res.json(ms); /* return the result to the client */
+            }
+            db.close(); /* close the database. This is good practise else you will end up with a lot of open data connections */
+        });
+    });
+
+    useSqlite.post('/people', function (req, res) {
+        const ms = JSON.parse(JSON.stringify(ret)); /* duplicate the message. this avoids wrong messages being sent to the client */
+        /* let us do some error checing. We want all the fields to be sent when they create a new record. */
+        if ( !req.body.firstname ) { /* check if the record exist */
+            ms.status = 500; /* set the error code */
+            ms.message = 'Please supply a first name'; /* set the error message */
+            res.json(ms); /* return the error message to the client */
+            return; /* stop processing the script */
+        }
+        if ( !req.body.lastname ) {
+            ms.status = 500;
+            ms.message = 'Please supply a last name';
+            res.json(ms);
+            return;
+        }
+        if ( !req.body.position ) {
+            ms.status = 500;
+            ms.message = 'Please supply a position';
+            res.json(ms);
+            return;
+        }
+        const firstname = req.body.firstname;
+        const lastname = req.body.lastname;
+        const position = req.body.position;
+
+        const db = new sqlite3.Database('./db/data.db');
+        db.run(`INSERT INTO people(firstname, lastname, position) VALUES(?, ?, ?)`, [firstname, lastname, position], function(err,result) {
+            if (err) {
+                ms.status = 500;
+                ms.message = err;
+                res.json(ms); /* return the result to the client */
+            } else {
+                ms.data = result;
+                res.json(ms); /* return the result to the client */
+            }
+            db.close();
+        });
+    });
+
+    useSqlite.put('/people', function (req, res) {
+        const ms = JSON.parse(JSON.stringify(ret)); /* duplicate the message. this avoids wrong messages being sent to the client */
+        /* let us do some error checing. We want all the fields to be sent when they create a new record. */
+        
+        let qstr = []; /* create an empty query string  */
+        let qval = []; /* create an empty query value array */
+
+        if ( req.body.firstname ) { /* check if the data exists */
+            qstr.push(`firstname = ?`); /* add the string to the qstr array */
+            qval.push(req.body.firstname); /* pust the value to qval array */
+        }
+        if ( req.body.lastname ) {
+            qstr.push(`lastname = ?`);
+            qval.push(req.body.lastname);
+        }
+        if ( req.body.position ) {
+            qstr.push(`position = ?`);
+            qval.push(req.body.position);
+        }
+        if ( !req.body.personid ) { /* the personid has not been sent throw an error */
+            ms.status = 500;
+            ms.message = 'Please supply the id of the record you want to update';
+            res.json(ms);
+            return;
+        }
+        qval.push(req.body.personid); /* add person id to the qval array */
+
+        const qstrout = qstr.toString(); /* turn the query array into a string */
+        let upstring = `UPDATE people SET ${qstrout} WHERE personid = ?`; /* build the update string */
+
+        const db = new sqlite3.Database('./db/data.db'); /* open the database */
+        db.run(upstring, qval, function(err,result) {
+            if (err) {
+                ms.status = 500;
+                ms.message = err;
+                res.json(ms); /* return the result to the client */
+            } else {
+                ms.data = result;
+                res.json(ms); /* return the result to the client */
+            }
+            db.close();
+        });
+    });
+
+    useSqlite.delete('/people/:personid', function (req, res) {
+        if ( !req.params.personid ) { /*  */
+            ms.status = 500;
+            ms.message = 'Please supply the id of the record you want to delete';
+            res.json(ms);
+            return;
+        }
+        const personid = req.params.personid;
+        const ms = JSON.parse(JSON.stringify(ret)); // duplicate the message. this avoids wrong messages being sent to the client */
+        const db = new sqlite3.Database('./db/data.db');
+        db.all('DELETE FROM people WHERE personid = ?', personid, (err, result) => {
+            if (err) {
+                ms.status = 500;
+                ms.message = err;
+                res.json(ms); /* return the result to the client */
+            } else {
+                ms.data = result;
+                res.json(ms); /* return the result to the client */
+            }
+            db.close(); 
+        });
+    });
+
+    return useSqlite;
+})();
+
+
+-- code end

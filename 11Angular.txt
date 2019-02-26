@@ -1,0 +1,6 @@
+# Angular
+
+$ git clone https://github.com/start-angular/SB-Admin-BS4-Angular-6.git
+
+$ mv SB-Admin-BS4-Angular-6 sbadmin
+

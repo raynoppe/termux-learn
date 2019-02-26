@@ -1,0 +1,21 @@
+# Node
+
+ ## Node-gyp
+
+ $ pkg install nodejs python python-dev python2 make clang git openssh cmake autoconf automake
+
+ ### .common.gypi
+['OS == "android"', {
+'cflags': [ '-fPIC' ],
+'ldflags': [ '-fPIC' ]
+}],
+
+# git
+## Setting up a SSH key 
+$ ssh-keygen -t ed25519 -C "termux" 
+
+## Add Git to your project
+$ git remote add origin git@gitlab.com:yourusername/apprest.git
+$ git add .
+$ git commit -m "Initial commit"
+$ git push -u origin master

@@ -1,0 +1,49 @@
+# Rest API
+$ curl http://countryapi.gear.host/v1/Country/getCountries?pName=Kingdom
+
+Include the headers above the data
+$ curl http://countryapi.gear.host/v1/Country/getCountries?pName=Kingdom -i
+
+Return only the headers 
+$ curl http://countryapi.gear.host/v1/Country/getCountries?pName=Kingdom -I
+
+$ curl -X GET http://countryapi.gear.host/v1/Country/getCountries?pName=Kingdom
+
+apprest/app.js
+
+-- copy start
+const express = require('express'),
+  app = express(),
+  port = Number(process.env.PORT || 3000),
+  bodyParser = require('body-parser');
+
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
+
+app.get('/', function (req, res) {
+  res.json({ message: 'index loaded' });
+});
+
+app.get("/:firstname/:lastname", function(req, res) {
+  res.json({
+    firstname  : req.params.firstname,
+    lastname  : req.params.lastname
+  });
+});
+
+app.post('/', function(req, res) {
+  res.json({ 
+    firstname: req.body.firstname,
+    lastname: req.body.lastname,
+    position: req.body.position,
+   });
+});
+
+// START THE SERVER
+// ===============================================
+
+app.listen(port, function() {
+  console.log('Listening on port ' + port);
+});
+
+-- copy end

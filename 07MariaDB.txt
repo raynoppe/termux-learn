@@ -1,0 +1,15 @@
+# MariaDB (MySQL)
+## Installing MariaDB
+$ cd /data/data/com.termux/files/usr/etc
+
+$ mkdir my.cnf.d
+
+create table people (
+person_id int AUTO_INCREMENT,
+    	person_name varchar(255) not null,
+    	primary key (person_id)
+) engine=innodb;
+
+insert into people(person_name) values('Ray'),('David'),('Henry');
+
+update people set person_title = 'The Boss' where person_id = 1;

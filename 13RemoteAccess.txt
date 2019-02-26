@@ -1,0 +1,22 @@
+BLACKICE remote access
+/data/data/com.termux/files/home/BLACKICEcoder
+
+# Getting Termux to run on a Kindle Fire
+
+Go to Settings > Security and then enable “Apps from Unknown Sources”. This will allow you to install APKS downloaded from the internet.
+
+Download the APK file to install the PlayStore 
+
+https://www.apkmirror.com/apk/google-inc/google-account-manager/google-account-manager-5-1-1743759-release/google-account-manager-5-1-1743759-android-apk-download/
+
+https://www.apkmirror.com/apk/google-inc/google-services-framework/google-services-framework-5-1-1743759-release/google-services-framework-5-1-1743759-android-apk-download/
+
+2017 Version download this:
+
+https://www.apkmirror.com/apk/google-inc/google-play-services/google-play-services-11-5-09-release/google-play-services-11-5-09-230-164803921-android-apk-download/
+
+Other versions download this: 
+
+https://www.apkmirror.com/apk/google-inc/google-play-store/google-play-store-7-0-25-h-all-0-release/google-play-store-7-0-25-h-0-android-apk-download/ 
+
+Install the Apps (.apk files) found in your downloads folder. 
