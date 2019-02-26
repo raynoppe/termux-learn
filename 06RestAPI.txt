@@ -47,3 +47,5 @@ app.listen(port, function() {
 });
 
 -- copy end
+
+{ "firstname": "Yourname", "lastname": "Yourlastname", "position": "Your position" }
