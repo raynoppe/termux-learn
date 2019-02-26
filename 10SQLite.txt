@@ -171,3 +171,25 @@ module.exports = (function() {
 
 
 -- code end
+
+Add a record
+{ 
+	"firstname": "Peter",
+	"lastname": "Frampton",
+	"position":"Guitarist"
+}
+
+
+Update a record
+
+{
+	"personid": 4,
+	"position": "Lead Guitarist"
+}
+
+{
+	"personid": 4,
+	"firstname": "Bob",
+	"lastname": "Hope",
+	"position": "Drummer"
+}

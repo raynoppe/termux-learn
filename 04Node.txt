@@ -4,6 +4,13 @@
 
  $ pkg install nodejs python python-dev python2 make clang git openssh cmake autoconf automake
 
+$ termux-fix-shebang $PREFIX/bin/node-pre-gyp
+$ termux-fix-shebang $PREFIX/bin/node-gyp
+
+$ node-gyp --python $PREFIX/bin/python2.7
+$ npm config set python $PREFIX/bin/python2.7
+
+
  ### .common.gypi
 ['OS == "android"', {
 'cflags': [ '-fPIC' ],
