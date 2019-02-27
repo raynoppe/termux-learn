@@ -12,4 +12,7 @@ person_id int AUTO_INCREMENT,
 
 insert into people(person_name) values('Ray'),('David'),('Henry');
 
+alter table people
+add column person_title varchar(100) after person_name;
+
 update people set person_title = 'The Boss' where person_id = 1;
